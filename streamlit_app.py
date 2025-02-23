@@ -13,7 +13,7 @@ MODEL_URL = "https://drive.google.com/uc?id=1ndSx9uWG6P9VYXVuSbfpUdkZ9Ut2Cr0Y"
 
 @st.cache_resource
 def load_emotion_model():
-    model_path = "emotion_model.h5"
+    model_path = "emotion_model_7.h5"
     if not os.path.exists(model_path):
         st.info("Downloading model... Please wait.")
         response = requests.get(MODEL_URL, stream=True)
