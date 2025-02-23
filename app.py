@@ -2,20 +2,28 @@ import streamlit as st
 import os
 import numpy as np
 import cv2
+import requests
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 
 EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
+# Direct download link for the model on Google Drive
+MODEL_URL = "https://drive.google.com/uc?id=1ndSx9uWG6P9VYXVuSbfpUdkZ9Ut2Cr0Y"
+
 @st.cache_resource
 def load_emotion_model():
     model_path = "emotion_model.h5"
     if not os.path.exists(model_path):
-        st.error("Model file 'emotion_model.h5' not found in the current directory.")
-        st.stop()
+        st.info("Downloading model... Please wait.")
+        response = requests.get(MODEL_URL, stream=True)
+        with open(model_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
     return load_model(model_path)
 
-# Load the model from the local file
+# Load the model from Google Drive
 model = load_emotion_model()
 st.write("Model loaded successfully!")
 
