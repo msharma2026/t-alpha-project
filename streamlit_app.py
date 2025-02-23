@@ -2,34 +2,26 @@ import streamlit as st
 import os
 import numpy as np
 import cv2
-import requests
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 
 EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
-# Direct download link for the model on Google Drive
-MODEL_URL = "https://drive.google.com/uc?id=1ndSx9uWG6P9VYXVuSbfpUdkZ9Ut2Cr0Y"
-
 @st.cache_resource
 def load_emotion_model():
     model_path = "emotion_model_7.h5"
     if not os.path.exists(model_path):
-        st.info("Downloading model... Please wait.")
-        response = requests.get(MODEL_URL, stream=True)
-        with open(model_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
+        st.error("Model file 'emotion_model_7.h5' not found in the current directory.")
+        st.stop()
     return load_model(model_path)
 
-# Load the model from Google Drive
+# Load the model from the local file in the repository
 model = load_emotion_model()
 st.write("Model loaded successfully!")
 
-# Choose Input Mode: Upload an Image or Take a Picture
+# Choose input mode: Upload an Image or Take a Picture
 option = st.radio("Choose input method:", ("Upload an Image", "Take a Picture"))
-image = None  # Placeholder for image
+image = None  # Placeholder for the image
 
 if option == "Upload an Image":
     uploaded_file = st.file_uploader("Upload an image...", type=["jpg", "png", "jpeg"])
@@ -44,10 +36,10 @@ elif option == "Take a Picture":
 
 # Process and predict emotion if an image is provided
 if image is not None:
-    # Resize to 48x48 (model's expected input size)
+    # Resize the image to 48x48 (model's expected input size)
     resized = cv2.resize(image, (48, 48))
     
-    # Ensure RGB format (3 channels)
+    # Convert to RGB (ensuring 3 channels)
     rgb_image = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
 
     # Normalize and expand dimensions
@@ -58,6 +50,6 @@ if image is not None:
     preds = model.predict(processed_img)
     emotion = EMOTIONS[np.argmax(preds)]
     
-    # Display the image and prediction using use_container_width
+    # Display the image and the predicted emotion
     st.image(image, caption="Captured Image", use_container_width=True)
     st.write(f"Predicted Emotion: **{emotion}**")
