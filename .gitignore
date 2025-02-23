@@ -1,6 +1,3 @@
-# Ignore the large emotion model file
-emotion_model.h5
-
 .streamlit/secrets.toml
 
 # Byte-compiled / optimized / DLL files
