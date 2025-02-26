@@ -1,15 +1,25 @@
 import streamlit as st
-import cv2
+import os
 import numpy as np
+import cv2
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import PyPDF2
 from PIL import Image
 import tempfile
 
-# Load pre-trained emotion detection model saved as an HDF5 file
-model = load_model("emotion_model.h5")
 EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
+
+@st.cache_resource
+def load_emotion_model():
+    model_path = "emotion_model.h5"
+    if not os.path.exists(model_path):
+        st.error("Model file 'emotion_model.h5' not found in the current directory.")
+        st.stop()
+    return load_model(model_path)
+
+model = load_emotion_model()
+st.write("Model loaded successfully!")
 
 tabp = st.sidebar.radio("Choose tab: ", ["Empathy Check", "Model Confidence"])
 
@@ -40,14 +50,14 @@ if tabp == "Model Confidence":
                 emotion = EMOTIONS[np.argmax(preds)]
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
             
-            st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), channels="RGB")
+            st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
             st.info(f"Emotion: {emotion} (Confidence: {confidence:.2%})")
 
 if tabp == "Empathy Check":
     st.title("Empathy Check System")
     st.write("This app analyzes facial expressions to assess empathy towards displayed content.")
 
-    # Tabs for different content types
+    #Tabs for different content types
     tab1, tab2, tab3 = st.tabs(["Upload Image", "Upload Video", "Read Content"])
     uploaded_content = None
     expected_emotion = ""
@@ -59,7 +69,7 @@ if tabp == "Empathy Check":
 
         if uploaded_image is not None:
             image = Image.open(uploaded_image)
-            st.image(image, caption="Uploaded Image", use_column_width=True)
+            st.image(image, caption="Uploaded Image", use_container_width=True)
 
     with tab2:
         st.header("Upload a Video")
@@ -84,11 +94,11 @@ if tabp == "Empathy Check":
         uploaded_content = uploaded_file
         st.text_area("Content:", displayed_text, height=500)
 
-    # Capture video feed
+    #Capture video feed
     cap = cv2.VideoCapture(0)
     emotion = ""
 
-    # Expanded expected emotions dictionary with grouped emotions
+    #Expanded expected emotions dictionary with grouped emotions
     expected_emotions = {
         "default": [],
         "sad": ["Sad", "Fear"],
