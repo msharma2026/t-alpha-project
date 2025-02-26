@@ -2,4 +2,4 @@ streamlit
 tensorflow
 opencv-python-headless
 numpy
-requests
+PyPDF2
